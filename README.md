@@ -1,88 +1,91 @@
+# RAG vs. LLM-Wiki
 
-# RW – RAG vs. LLM-Wiki
+## Zwei Wissensarchitekturen im direkten Vergleich
 
-## RAG-System mit n8n, Supabase und OpenAI
+<p align="center">
+  <img src="projektvorstellung/screenshots/streamlit/rag-vs-wiki-titelbild.png" alt="Vector-RAG mit Supabase im Vergleich zu einem LLM-Wiki mit Obsidian" width="900">
+</p>
 
-### Projektbeschreibung
+In diesem Projekt vergleiche ich zwei Wege, Unternehmenswissen für einen KI-Assistenten nutzbar zu machen: ein klassisches Vector-RAG und ein dateibasiertes LLM-Wiki. Beide Systeme arbeiten mit denselben Informationen, suchen und strukturieren sie aber unterschiedlich.
 
-Entwicklung eines KI-gestützten Wissenssystems auf Basis von **Retrieval-Augmented Generation (RAG)**. Das System ermöglicht die natürlichsprachliche Abfrage interner Unternehmensdokumente mithilfe eines KI-Agenten.
+Als Testfall dient ein fiktiver Elektroinstallationsbetrieb. Der Assistent beantwortet Fragen zu Projekten, offenen Arbeiten, technischen Mängeln, Zahlungen und nächsten Schritten. Namen und Geschäftsdaten sind frei erfunden.
 
-Als Anwendungsbeispiel dient ein fiktiver Elektroinstallationsbetrieb. Der KI-Assistent **RW Bot** beantwortet Fragen zu Baustellen, Installationsmaterialien, Arbeitsleistungen, Projektständen, Nacharbeiten und Abrechnungen auf Grundlage der hinterlegten Dokumente.
+### Projekt in zwei Minuten ansehen
 
-## Architektur
+Der Screencast zeigt die Gesamtarchitektur, Supabase, Obsidian, die n8n-Orchestrierung und einen abschließenden Direktvergleich in der Streamlit-Oberfläche.
 
-Das RAG-System besteht aus zwei getrennten n8n-Workflows.
+[▶ Screencast ansehen](screencast/rag-vs-llm-wiki-screencast.mp4)
 
-### 1. Dokumentenverarbeitung und Speicherung
+## Die Projektidee
 
-**Google Drive → n8n → PDF-Extraktion → Text Splitter → OpenAI Embeddings → Supabase**
+Ausgangspunkt war ein klassisches RAG-System für die semantische Suche in Dokumenten. Mich interessierte, wie sich dieser Ansatz im Alltag gegen ein strukturiertes Wiki schlägt. Dort beginnt der Agent mit einem zentralen Index, wählt passende Markdown-Dateien aus und liest nur die Informationen ein, die er für die Frage benötigt.
 
-Neue PDF-Dokumente werden über einen Google Drive Trigger erkannt, heruntergeladen und automatisch verarbeitet.
+Die Idee für den zweiten Ansatz geht auf Andrej Karpathys Konzept eines [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) zurück. Wissen wird dabei nicht bei jeder Frage erneut aus einzelnen Dokumentfragmenten zusammengesetzt, sondern dauerhaft in einer strukturierten Markdown-Wissensbasis abgelegt. Google Cloud greift eine ähnliche Idee mit dem [Open Knowledge Format (OKF)](https://github.com/GoogleCloudPlatform/open-knowledge-format) auf.
 
-Die extrahierten Texte werden in kleinere Abschnitte aufgeteilt, in numerische Vektorrepräsentationen umgewandelt und zusammen mit den Textinhalten in einer Supabase-Datenbank gespeichert.
+Für den Wiki-Zweig habe ich zentrale Strukturprinzipien von OKF 0.2 übernommen. Ein n8n-Agent erzeugt einzelne Markdown-Dateien mit YAML-Frontmatter, Typ, Beschreibung, Status und Quellen. Die `index.md` dient als Einstiegspunkt; relative Links verbinden Projekte, Personen, Unternehmen und Übersichten. Bei einer Frage liest der Wiki-Agent zuerst den Index und anschließend nur die relevanten Dateien.
 
-**Technische Konfiguration:**
+Das Projekt macht beide Ansätze über dieselbe Oberfläche nutzbar und direkt vergleichbar:
 
-| Komponente | Konfiguration |
+- **Vector-RAG:** semantische Suche mit OpenAI Embeddings und Supabase `pgvector`
+- **LLM-Wiki:** strukturierter Zugriff auf ein Obsidian-Wiki mit `index.md` und Markdown-Dateien
+- **Direktvergleich:** parallele Beantwortung derselben Frage durch beide Wissensarchitekturen
+
+![Animierte Systemtopologie von Vector-RAG und LLM-Wiki](topologie/systemtopologie-preview.gif)
+
+Die eingebettete Grafik ist eine GIF-Vorschau. [Vollständige animierte Systemtopologie öffnen](topologie/systemtopologie.html).
+
+## Funktionen
+
+- natürlichsprachliche Abfragen interner Projektdokumente
+- nachvollziehbare Quellenangaben
+- fortlaufende Chatverläufe über PostgreSQL Memory
+- getrennte Messwerte für Tokens, geschätzte Kosten und Antwortzeit
+- Vergleich von Vector-RAG und LLM-Wiki in einer gemeinsamen Streamlit-Oberfläche
+- Orchestrierung der Agenten, Tools und Datenquellen mit n8n
+
+## Technischer Aufbau
+
+| Bereich | Umsetzung |
 |---|---|
-| Automatisierung | n8n (Docker, lokal) |
-| Datenquelle | Google Drive |
-| Dokumentenformat | PDF |
-| Text Splitter | Recursive Character Text Splitter |
-| Chunk Size | 1.000 Zeichen |
-| Chunk Overlap | 100 Zeichen |
-| Embedding-Modell | OpenAI `text-embedding-3-small` |
-| Vektordimensionen | 1.536 |
-| Datenbank | Supabase PostgreSQL mit pgvector |
+| Orchestrierung | n8n, lokal über Docker |
+| Benutzeroberfläche | Streamlit |
+| Vector-RAG | Supabase PostgreSQL, `pgvector`, OpenAI Embeddings |
+| LLM-Wiki | Obsidian, OKF-0.2-orientierte Markdown-Struktur, zentraler Dateiindex, n8n-Subworkflow |
+| Sprachmodell | OpenAI `gpt-5-mini` |
+| Gesprächsspeicher | PostgreSQL Chat Memory |
+| Dokumentenaufnahme | Google Drive, PDF-Extraktion, Chunking und Embeddings |
 
-### 2. KI-Agent und Wissensabfrage
+## Projektstatus
 
-**Chat → AI Agent → Supabase Vector Store → OpenAI Chat Model → Antwort**
+Der erste funktionsfähige Prototyp steht. Über die Streamlit-Oberfläche lassen sich Vector-RAG, LLM-Wiki und der Direktvergleich auswählen. Beide Agenten liefern Quellen sowie getrennte Angaben zu Laufzeit, Tokenverbrauch und geschätzten Kosten. Ein Screencast dokumentiert den Aufbau und einen vollständigen Testlauf.
 
-Der Nutzer stellt eine Frage über die Chat-Oberfläche von n8n.
+Die README gibt einen kurzen Überblick. Die ausführliche Projektvorstellung und die Systemtopologie ergänzen die technischen Details.
 
-Der KI-Agent kann über ein angebundenes Supabase Vector Store Tool auf die gespeicherten Dokumenteninhalte zugreifen.
+## Entwicklungsstand
 
-Die Nutzerfrage wird mithilfe desselben Embedding-Modells vektorisiert. Anschließend werden über die PostgreSQL-Funktion `match_documents` semantisch passende Textabschnitte ermittelt.
+| Version | Schwerpunkt | Status |
+|---|---|---|
+| `v0.1` | Dokumentenaufnahme und klassisches Vector-RAG mit Supabase | abgeschlossen |
+| `v0.2` | LLM-Wiki mit Obsidian, Dateiindex und n8n-Subworkflow | abgeschlossen |
+| `v0.3` | Gemeinsame Streamlit-Oberfläche und direkter Vergleich | aktueller Prototyp |
+| `v0.4` | Erweiterter Dokumentenbestand und systematische Evaluation | geplant |
 
-Diese Informationen dienen dem Sprachmodell als Kontext für die Antwortgenerierung.
+## Ausblick
 
-**Technische Konfiguration:**
+In `v0.4` möchte ich den Dokumentenbestand erweitern und beide Systeme mit demselben Fragenkatalog testen. Zu jeder Frage wird vorab festgehalten, welche Antwort und welche Quellen erwartet werden. So lässt sich der Vergleich nachvollziehbar wiederholen.
 
-- n8n AI Agent mit OpenAI Chat Model
-- Supabase Vector Store als Agenten-Tool
-- Semantische Suche mittels pgvector und Cosine Similarity
-- Retrieval-Limit: 4 Dokumentenabschnitte
-- PostgreSQL Chat Memory zur Speicherung des Gesprächsverlaufs
-- Systemanweisungen zur bevorzugten Verwendung interner Projektdaten
+Untersucht werden unter anderem:
 
-## Testdaten
+- Antwortqualität und korrekte Quellenverwendung
+- Mehrdokument-Fragen und Wissensverknüpfung
+- Verhalten bei aktualisierten Dokumenten
+- Halluzinationen und nicht belegte Aussagen
+- Antwortzeit, Tokenverbrauch und geschätzte API-Kosten
+- wiederholte Tests unter denselben Bedingungen
 
-Für die Entwicklung wird eine fiktive Baustellendokumentation mit drei Elektroinstallationsprojekten verwendet.
+## Weiterführende Inhalte
 
-Die Dokumentation enthält unter anderem:
-
-- Leitungstypen, Kabellängen und Materialpreise
-- Steckdosen, Schalter und Elektroverteilungen
-- Arbeitsstunden und Installationskosten
-- Baustellenstatus und technische Freigaben
-- Mängel, Nacharbeiten und offene Leistungen
-- Auftragswerte, Zahlungen und Nachträge
-
-Sämtliche Kunden- und Geschäftsdaten sind fiktiv.
-
-## Aktueller Entwicklungsstand
-
-- [x] n8n lokal über Docker eingerichtet
-- [x] Google Drive als Dokumentenquelle angebunden
-- [x] Automatisierte PDF-Verarbeitung eingerichtet
-- [x] Chunking und Embedding-Erstellung implementiert
-- [x] Supabase-Vektordatenbank eingerichtet
-- [x] Dokumente erfolgreich in Supabase gespeichert
-- [x] AI Agent mit Supabase Vector Store verbunden
-- [x] PostgreSQL Chat Memory konfiguriert
-- [ ] Systematische Prüfung der Antwortqualität
-
----
-
-**Status:** RAG-Prototyp implementiert, Funktionstests und Evaluation in Bearbeitung.
+- [Ausführliche Projektvorstellung](projektvorstellung/PROJEKTVORSTELLUNG.md)
+- [Animierte Systemtopologie](topologie/systemtopologie.html)
+- [GIF-Vorschau der Topologie](topologie/systemtopologie-preview.gif)
+- [Screencast der funktionierenden Anwendung](screencast/rag-vs-llm-wiki-screencast.mp4)

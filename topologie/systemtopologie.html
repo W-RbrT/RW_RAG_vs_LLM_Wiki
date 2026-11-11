@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Systemtopologie – Vector-RAG vs. LLM-Wiki</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;background:#0b0912}
+    body{min-height:100vh;min-height:100dvh;padding:12px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    body > #rw-topology{width:min(100%,calc((100vh - 24px)*1.6));width:min(100%,calc((100dvh - 24px)*1.6));max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px)}
+  </style>
+</head>
+<body>
+<div id="rw-topology">
+  <style>
+    #rw-topology{--bg:#0b0912;--panel:#15121b;--node:#211c27;--text:#f7f5fb;--muted:#aaa3b0;--line:#625a6d;--green:#39e48a;--green-soft:#102019;--purple:#a970ff;--purple-soft:#1d1229;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);border-radius:24px;overflow:hidden;width:100%;}
+    #rw-topology .canvas{position:relative;aspect-ratio:1.6/1;width:100%;min-height:0;background:radial-gradient(circle at 25% 15%,rgba(57,228,138,.06),transparent 28%),radial-gradient(circle at 77% 18%,rgba(169,112,255,.08),transparent 30%),var(--bg);}
+    #rw-topology svg{display:block;width:100%;height:100%;}
+    #rw-topology text{font-family:inherit;}
+    #rw-topology .section{fill:var(--text);font-size:27px;font-weight:700;letter-spacing:.8px;}
+    #rw-topology .lane-title{font-size:28px;font-weight:700;}
+    #rw-topology .lane-note{fill:var(--muted);font-size:18px;}
+    #rw-topology .node-title{fill:var(--text);font-size:20px;font-weight:700;}
+    #rw-topology .node-sub{fill:var(--muted);font-size:18px;}
+    #rw-topology .edge-label{fill:#d8d2de;font-size:18px;font-weight:650;paint-order:stroke;stroke:var(--bg);stroke-width:7px;stroke-linejoin:round;}
+    #rw-topology .legend{fill:#e8e3eb;font-size:17px;font-weight:650;}
+    #rw-topology .panel{fill:var(--panel);stroke:#4f4659;stroke-width:2;}
+    #rw-topology .rag-panel{fill:var(--green-soft);stroke:#2d8d5f;stroke-width:2;}
+    #rw-topology .wiki-panel{fill:var(--purple-soft);stroke:#7449ad;stroke-width:2;}
+    #rw-topology .node{fill:var(--node);stroke:#5c5364;stroke-width:2;}
+    #rw-topology .rag-node{fill:#17251e;stroke:var(--green);stroke-width:2;}
+    #rw-topology .wiki-node{fill:#261932;stroke:var(--purple);stroke-width:2;}
+    #rw-topology .base{fill:none;stroke:var(--line);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;}
+    #rw-topology .flow{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:11 14;animation:rw-flow 2.2s linear infinite;}
+    #rw-topology .rag-flow{stroke:var(--green);marker-end:url(#rw-green-arrow);}
+    #rw-topology .wiki-flow{stroke:var(--purple);marker-end:url(#rw-purple-arrow);animation-delay:-.8s;}
+    #rw-topology .common-flow{stroke:#b0a8ba;marker-end:url(#rw-common-arrow);animation-delay:-.4s;}
+    #rw-topology .pulse{animation:rw-pulse 2.2s ease-in-out infinite;}
+    @keyframes rw-flow{to{stroke-dashoffset:-50}}
+    @keyframes rw-pulse{0%,100%{opacity:.55}50%{opacity:1}}
+    @media (prefers-reduced-motion:reduce){#rw-topology .flow,#rw-topology .pulse{animation:none}}
+  </style>
+  <div class="canvas">
+    <svg viewBox="0 0 1920 1200" role="img" aria-labelledby="rw-title rw-desc">
+      <title id="rw-title">Animierte Systemtopologie von Vector-RAG und LLM-Wiki</title>
+      <desc id="rw-desc">Oben werden Dokumente parallel als Vektorspeicher und als Markdown-Wiki aufbereitet. Unten verteilt n8n eine Nutzerfrage an den RAG-Agenten, den Wiki-Agenten oder beide Systeme und führt die getrennten Ergebnisse in Streamlit zusammen.</desc>
+      <defs>
+        <marker id="rw-green-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10Z" fill="#39e48a"/></marker>
+        <marker id="rw-purple-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10Z" fill="#a970ff"/></marker>
+        <marker id="rw-common-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10Z" fill="#b0a8ba"/></marker>
+      </defs>
+
+      <text class="section" x="42" y="58">1 · WISSEN AUFBAUEN</text>
+      <g transform="translate(1390 46)"><circle cx="0" cy="0" r="8" fill="#39e48a"/><text class="legend" x="20" y="6">Vector-RAG</text><circle cx="155" cy="0" r="8" fill="#a970ff"/><text class="legend" x="175" y="6">LLM-Wiki</text><circle cx="300" cy="0" r="8" fill="#b0a8ba"/><text class="legend" x="320" y="6">gemeinsam</text></g>
+
+      <!-- Wissensaufbau: RAG -->
+      <rect class="rag-panel" x="36" y="86" width="914" height="314" rx="22"/>
+      <circle cx="72" cy="132" r="10" fill="#39e48a"/><text class="lane-title" x="96" y="142" fill="#39e48a">Vector-RAG</text><text class="lane-note" x="920" y="140" text-anchor="end">semantischer Vektorspeicher</text>
+      <rect class="rag-node" x="52" y="188" width="140" height="144" rx="16"/><text class="node-title" x="122" y="244" text-anchor="middle">PDF laden</text><text class="node-sub" x="122" y="282" text-anchor="middle">Google Drive</text>
+      <rect class="rag-node" x="299" y="188" width="140" height="144" rx="16"/><text class="node-title" x="369" y="244" text-anchor="middle">Text teilen</text><text class="node-sub" x="369" y="282" text-anchor="middle">Chunks</text>
+      <rect class="rag-node" x="546" y="188" width="140" height="144" rx="16"/><text class="node-title" x="616" y="244" text-anchor="middle">Vektorisieren</text><text class="node-sub" x="616" y="282" text-anchor="middle">Embeddings</text>
+      <rect class="rag-node" x="793" y="188" width="140" height="144" rx="16"/><text class="node-title" x="863" y="236" text-anchor="middle">Supabase</text><text class="node-sub" x="863" y="272" text-anchor="middle">Text · Metadaten</text><text class="node-sub" x="863" y="300" text-anchor="middle">pgvector</text>
+      <path class="base" d="M192 260H299M439 260H546M686 260H793"/><path class="flow rag-flow" d="M192 260H299M439 260H546M686 260H793"/>
+      <text class="edge-label" x="245.5" y="236" text-anchor="middle">PDF</text><text class="edge-label" x="492.5" y="236" text-anchor="middle">Chunks</text><text class="edge-label" x="739.5" y="236" text-anchor="middle">Vektoren</text>
+
+      <!-- Wissensaufbau: Wiki -->
+      <rect class="wiki-panel" x="970" y="86" width="914" height="314" rx="22"/>
+      <circle cx="1006" cy="132" r="10" fill="#a970ff"/><text class="lane-title" x="1030" y="142" fill="#a970ff">LLM-Wiki</text><text class="lane-note" x="1854" y="140" text-anchor="end">strukturierte Markdown-Wissensbasis</text>
+      <rect class="wiki-node" x="986" y="188" width="140" height="144" rx="16"/><text class="node-title" x="1056" y="244" text-anchor="middle">PDF laden</text><text class="node-sub" x="1056" y="282" text-anchor="middle">Google Drive</text>
+      <rect class="wiki-node" x="1233" y="188" width="140" height="144" rx="16"/><text class="node-title" x="1303" y="234" text-anchor="middle">Text</text><text class="node-title" x="1303" y="262" text-anchor="middle">extrahieren</text><text class="node-sub" x="1303" y="300" text-anchor="middle">PDF-Inhalt</text>
+      <rect class="wiki-node" x="1480" y="188" width="140" height="144" rx="16"/><text class="node-title" x="1550" y="244" text-anchor="middle">Strukturieren</text><text class="node-sub" x="1550" y="282" text-anchor="middle">OKF-Agent</text>
+      <rect class="wiki-node" x="1727" y="188" width="140" height="144" rx="16"/><text class="node-title" x="1797" y="228" text-anchor="middle">Obsidian</text><text class="node-sub" x="1797" y="264" text-anchor="middle">index.md · YAML</text><text class="node-sub" x="1797" y="292" text-anchor="middle">Markdown-</text><text class="node-sub" x="1797" y="316" text-anchor="middle">Dateien</text>
+      <path class="base" d="M1126 260H1233M1373 260H1480M1620 260H1727"/><path class="flow wiki-flow" d="M1126 260H1233M1373 260H1480M1620 260H1727"/>
+      <text class="edge-label" x="1179.5" y="236" text-anchor="middle">PDF</text><text class="edge-label" x="1426.5" y="236" text-anchor="middle">Text</text><text class="edge-label" x="1673.5" y="236" text-anchor="middle">Markdown</text>
+
+      <text class="section" x="42" y="466">2 · FRAGE BEANTWORTEN</text>
+
+      <!-- Gemeinsamer Eingang -->
+      <rect class="panel" x="36" y="492" width="1848" height="176" rx="22"/>
+      <text class="lane-title" x="70" y="537" fill="#f7f5fb">Gemeinsamer Eingang</text><text class="lane-note" x="1850" y="535" text-anchor="end">Streamlit übergibt Frage, Session-ID und Modus an n8n</text>
+      <rect class="node" x="238" y="568" width="300" height="70" rx="15"/><text class="node-title" x="388" y="598" text-anchor="middle">Nutzerfrage</text><text class="node-sub" x="388" y="624" text-anchor="middle">Streamlit</text>
+      <rect class="node" x="810" y="568" width="300" height="70" rx="15"/><text class="node-title" x="960" y="598" text-anchor="middle">Webhook</text><text class="node-sub" x="960" y="624" text-anchor="middle">Anfrage empfangen</text>
+      <rect class="node" x="1382" y="568" width="300" height="70" rx="15"/><text class="node-title" x="1532" y="598" text-anchor="middle">Switch</text><text class="node-sub" x="1532" y="624" text-anchor="middle">rag · wiki · compare</text>
+      <path class="base" d="M538 603H810M1110 603H1382"/><path class="flow common-flow" d="M538 603H810M1110 603H1382"/><text class="edge-label" x="674" y="584" text-anchor="middle">Frage senden</text><text class="edge-label" x="1246" y="584" text-anchor="middle">Modus auswählen</text>
+
+      <!-- Verzweigung ausschließlich im freien Korridor -->
+      <path class="base" d="M1490 638V722H490V770M1574 638V722H1430V770"/>
+      <path class="flow rag-flow" d="M1490 638V722H490V770"/><path class="flow wiki-flow" d="M1574 638V722H1430V770"/>
+      <text class="edge-label" x="900" y="710" text-anchor="middle">rag / compare → RAG-Agent</text><text class="edge-label" x="1652" y="710" text-anchor="middle">wiki / compare → Wiki-Agent</text>
+
+      <!-- RAG Abfrage -->
+      <rect class="rag-panel" x="36" y="770" width="914" height="286" rx="22"/>
+      <circle cx="72" cy="816" r="10" fill="#39e48a"/><text class="lane-title" x="96" y="826" fill="#39e48a">Vector-RAG abfragen</text>
+      <rect class="rag-node" x="52" y="864" width="180" height="130" rx="16"/><text class="node-title" x="142" y="908" text-anchor="middle">Supabase</text><text class="node-sub" x="142" y="942" text-anchor="middle">Vektorsuche</text><text class="node-sub" x="142" y="968" text-anchor="middle">Top-Treffer</text>
+      <rect class="rag-node" x="378" y="864" width="190" height="130" rx="16"/><text class="node-title" x="473" y="908" text-anchor="middle">Kontext prüfen</text><text class="node-sub" x="473" y="942" text-anchor="middle">Belege auswählen</text>
+      <rect class="rag-node" x="714" y="864" width="220" height="130" rx="16"/><text class="node-title" x="824" y="908" text-anchor="middle">RAG-Agent</text><text class="node-sub" x="824" y="942" text-anchor="middle">Antwort mit Quellen</text>
+      <path class="base" d="M232 929H378M568 929H714"/><path class="flow rag-flow" d="M232 929H378M568 929H714"/><text class="edge-label" x="305" y="904" text-anchor="middle">Chunks</text><text class="edge-label" x="641" y="904" text-anchor="middle">Kontext</text>
+
+      <!-- Wiki Abfrage -->
+      <rect class="wiki-panel" x="970" y="770" width="914" height="286" rx="22"/>
+      <circle cx="1006" cy="816" r="10" fill="#a970ff"/><text class="lane-title" x="1030" y="826" fill="#a970ff">LLM-Wiki abfragen</text>
+      <rect class="wiki-node" x="986" y="864" width="180" height="130" rx="16"/><text class="node-title" x="1076" y="908" text-anchor="middle">index.md</text><text class="node-sub" x="1076" y="942" text-anchor="middle">Dateien auswählen</text>
+      <rect class="wiki-node" x="1312" y="864" width="190" height="130" rx="16"/><text class="node-title" x="1407" y="908" text-anchor="middle">Subworkflow</text><text class="node-sub" x="1407" y="942" text-anchor="middle">Dateien parallel laden</text>
+      <rect class="wiki-node" x="1648" y="864" width="220" height="130" rx="16"/><text class="node-title" x="1758" y="908" text-anchor="middle">Wiki-Agent</text><text class="node-sub" x="1758" y="942" text-anchor="middle">Antwort mit Quellen</text>
+      <path class="base" d="M1166 929H1312M1502 929H1648"/><path class="flow wiki-flow" d="M1166 929H1312M1502 929H1648"/><text class="edge-label" x="1239" y="904" text-anchor="middle">Dateinamen</text><text class="edge-label" x="1575" y="904" text-anchor="middle">Markdown</text>
+
+      <!-- Ergebnisleitungen liegen unterhalb der Spuren -->
+      <path class="base" d="M824 994V1092H900V1120M1758 994V1092H1020V1120"/><path class="flow rag-flow" d="M824 994V1092H900V1120"/><path class="flow wiki-flow" d="M1758 994V1092H1020V1120"/>
+      <text class="edge-label" x="840" y="1080" text-anchor="middle">RAG-Antwort</text><text class="edge-label" x="1370" y="1080" text-anchor="middle">Wiki-Antwort</text>
+      <rect class="panel" x="420" y="1120" width="1080" height="62" rx="18"/><text class="node-title" x="960" y="1147" text-anchor="middle">Direktvergleich in Streamlit</text><text class="node-sub" x="960" y="1172" text-anchor="middle">Antworten · Quellen · Tokens · geschätzte Kosten · Laufzeit bleiben je System getrennt</text>
+    </svg>
+  </div>
+</div>
+
+</body>
+</html>
